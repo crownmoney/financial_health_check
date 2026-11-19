@@ -1,0 +1,34 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Complete Assessment | Crown Money</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
+<div id="top"></div>
+<main>
+ <div class="progress"><span>Form progress: Step 2 of 2</span><b>100% complete</b></div><div class="bar"><i style="width:100%"></i></div>
+ <a class="back" href="/">← Back to questions</a>
+ <form id="f2" novalidate>
+  <p class="hp" aria-hidden="true"><label>Don't fill this out <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+  <div class="panel"><h3>Client profile</h3><div class="in cols">
+   <div><label class="lbl">Email address</label><input id="email" type="email" required></div>
+   <div><label class="lbl" for="p1">Person 1 name <span class="req">*</span></label><input id="p1" type="text" required autocomplete="given-name"></div>
+   <div><label class="lbl" for="p2">Person 2 name (optional)</label><input id="p2" type="text" placeholder="e.g. Jane Smith"></div></div></div>
+
+  <div class="panel"><h3>Net income (Person 1 required)</h3><div class="in">
+   <div class="note"><strong>Important:</strong> enter your <strong>net income</strong> (the amount into your bank account after tax). Use the estimator below if you only know your gross salary.</div>
+   <div class="panel" style="margin-bottom:16px"><div class="in"><div class="sec" style="margin-top:0">Advanced income estimator (gross → net, approx.)</div>
+    <div class="cols" style="grid-template-columns:1fr 1fr auto;align-items:end"><div><label class="lbl" for="g-amt">Gross salary</label><input id="g-amt" type="number" min="0" step="any" inputmode="decimal"></div><div><label class="lbl" for="g-freq">Frequency</label><select id="g-freq"></select></div><button type="button" class="btn" style="margin:0;padding:11px 16px" id="g-calc">Calculate net</button></div>
+    <div class="err" id="g-out" style="color:var(--muted)">Estimate only: uses 2026–27 resident rates + 2% Medicare, excludes offsets and HELP.</div></div></div>
+   <div id="inc"></div></div></div>
+
+  <div class="panel"><h3>Expenses</h3><div class="in"><div id="exp"></div>
+   <div id="custom"></div><button type="button" class="link" id="add-exp">+ Add expense</button>
+   <div class="total"><span>Estimated monthly expenses</span><span id="tot">$0</span></div></div></div>
+
+  <div class="panel"><h3>Complete assessment</h3><div class="in">
+   <div class="done"><strong>Your data is Safe &amp; Secure.</strong> Everything is encrypted and only used to prepare your strategy session. Estimates are fine.</div>
+   <div class="err" id="e-form"></div>
+   <button class="btn" type="submit" id="submit">Submit assessment</button></div></div>
+ </form>
+</main>
+<div id="bottom"></div>
+<script src="/assets/layout.js"></script>
+<script src="/assets/assessment.js"></script>
+</body></html>

@@ -1,0 +1,33 @@
+<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financial Health Check | Crown Money</title><meta name="description" content="Two minutes to a plan tailored to your numbers. Crown Money financial health check."><link rel="stylesheet" href="/assets/styles.css"></head><body>
+<div id="top"></div>
+<main>
+ <div class="progress"><span>Form progress: Step 1 of 2</span><b>50% complete</b></div><div class="bar"><i style="width:50%"></i></div>
+ <form class="card" id="f1" novalidate>
+  <h2>Financial Health Check</h2><p class="sub">Two minutes here = a plan tailored to your numbers (not guesswork).</p>
+  <div class="why"><strong>Why this helps:</strong> With this info we map your fastest path, set early milestones, and keep the meeting focused on solutions — not paperwork.<br><em>Time: ~2 minutes • Estimates are fine.</em></div>
+  <div class="field"><label class="lbl" for="email">Email address <span class="req">*</span></label><input id="email" type="email" autocomplete="email" required><div class="err" id="e-email"></div></div>
+  <div id="qs"></div>
+  <div class="field" style="margin-top:26px"><label class="lbl" for="goal">What would you most like to achieve with your money goals that you aren't currently on track for?</label><textarea id="goal" placeholder="e.g. Pay off my home loan faster, build a buffer, invest for retirement..."></textarea></div>
+  <div class="field"><label class="lbl" for="missing">What's most missing from your current approach you feel might help?</label><select id="missing"><option value="">Select an option...</option><option>A written plan with dates</option><option>Expert coaching</option><option>Better visibility of my spending</option><option>A faster loan structure</option><option>Shared goals with my partner</option><option>Something else</option></select></div>
+  <div class="err" id="e-form"></div>
+  <button class="btn" type="submit">Proceed to final step →</button>
+ </form>
+</main>
+<div id="bottom"></div>
+<script src="/assets/layout.js"></script>
+<script>
+const SECTIONS=[["Your plan","Direction & dates",[["plan_written","I have a written plan with my exact debt-free date."],["know_interest","I know exactly how much interest I'll hand the bank over my loan."],["debt_free_retire","I'll be debt-free comfortably before I retire."],["buffer_3m","I have 3+ months of expenses saved as a buffer."]]],
+["Your money","How hard it works",[["loan_structure","My loan is structured to pay down faster than a standard bank loan."],["rates_2pct","If rates rose 2%, I know the cost and my plan still holds."],["tracking","I track my money with real live data feeds and compare my bills every year."]]],
+["Your support","Who is in your corner",[["partner_aligned","My partner and I share one plan and the same debt-free goal."],["coaching","I've had coaching built around my situation, not generic tips."],["expert_review","I review my strategy with an expert as life changes."]]]];
+let n=0;document.getElementById("qs").innerHTML=SECTIONS.map(([h,s,qs])=>`<div class="group">${h}<small>${s}</small></div>`+qs.map(([k,t])=>{n++;return `<div class="q" role="group" aria-label="${t}"><span class="n">${n}</span><span class="t">${t} <span class="req">*</span></span><div class="yn"><input type="radio" name="${k}" id="${k}-y" value="Yes"><label for="${k}-y">Yes</label><input type="radio" name="${k}" id="${k}-n" value="No"><label for="${k}-n">No</label></div></div>`}).join("")).join("");
+const KEYS=SECTIONS.flatMap(s=>s[2].map(q=>q[0]));
+const saved=store.get();
+if(saved.step1){const s=saved.step1;email.value=s.email||"";goal.value=s.goal||"";missing.value=s.missing||"";KEYS.forEach(k=>{if(s[k]){const el=document.getElementById(k+"-"+(s[k]==="Yes"?"y":"n"));if(el)el.checked=true}})}
+f1.addEventListener("submit",e=>{e.preventDefault();
+ const v=email.value.trim();document.getElementById("e-email").textContent="";document.getElementById("e-form").textContent="";
+ if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){document.getElementById("e-email").textContent="Please enter a valid email address.";email.focus();return}
+ const d={email:v,goal:goal.value.trim(),missing:missing.value};
+ for(const k of KEYS){const c=document.querySelector(`input[name="${k}"]:checked`);if(!c){document.getElementById("e-form").textContent="Please answer all 10 questions.";return}d[k]=c.value}
+ store.set({...store.get(),step1:d});location.href="/assessment";});
+</script></body></html>
