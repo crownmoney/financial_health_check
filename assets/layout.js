@@ -15,3 +15,10 @@ async function postForm(data){
   if(!r.ok) throw new Error("Submission failed ("+r.status+")");
 }
 const store={get(){try{return JSON.parse(sessionStorage.getItem("fhc")||"{}")}catch(e){return{}}},set(v){try{sessionStorage.setItem("fhc",JSON.stringify(v))}catch(e){}}};
+
+// Calls our Netlify Function (holds the HubSpot token server-side). Never throws; resolves to {ok,token?}.
+async function hubspot(step,payload,ms=10000){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),ms);
+  try{const r=await fetch("/api/hubspot/"+step,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),signal:ctl.signal});
+    return r.ok?await r.json():{ok:false}}catch(e){return{ok:false}}finally{clearTimeout(t)}
+}

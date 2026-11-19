@@ -24,10 +24,12 @@ let n=0;document.getElementById("qs").innerHTML=SECTIONS.map(([h,s,qs])=>`<div c
 const KEYS=SECTIONS.flatMap(s=>s[2].map(q=>q[0]));
 const saved=store.get();
 if(saved.step1){const s=saved.step1;email.value=s.email||"";goal.value=s.goal||"";missing.value=s.missing||"";KEYS.forEach(k=>{if(s[k]){const el=document.getElementById(k+"-"+(s[k]==="Yes"?"y":"n"));if(el)el.checked=true}})}
-f1.addEventListener("submit",e=>{e.preventDefault();
+f1.addEventListener("submit",async e=>{e.preventDefault();
  const v=email.value.trim();document.getElementById("e-email").textContent="";document.getElementById("e-form").textContent="";
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){document.getElementById("e-email").textContent="Please enter a valid email address.";email.focus();return}
  const d={email:v,goal:goal.value.trim(),missing:missing.value};
  for(const k of KEYS){const c=document.querySelector(`input[name="${k}"]:checked`);if(!c){document.getElementById("e-form").textContent="Please answer all 10 questions.";return}d[k]=c.value}
- store.set({...store.get(),step1:d});location.href="/assessment";});
+ const btn=f1.querySelector("button[type=submit]");btn.disabled=true;btn.textContent="Saving…";
+ const hp=await hubspot("step1",d); // never blocks the user if HubSpot is unavailable
+ store.set({...store.get(),step1:d,token:hp.token||""});location.href="/assessment";});
 </script></body></html>

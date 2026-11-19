@@ -37,5 +37,9 @@ $("f2").addEventListener("submit",async e=>{e.preventDefault();$("e-form").textC
  d.custom_expenses=JSON.stringify([...document.querySelectorAll("#custom .row")].map(r=>({name:r.querySelector("[data-cname]").value.trim(),amount:r.querySelector("[data-camt]").value,frequency:r.querySelector("[data-cfreq]").value})).filter(x=>x.name&&x.amount));
  d.est_monthly_expenses=$("tot").textContent;
  const b=$("submit");b.disabled=true;b.textContent="Submitting…";
- try{await postForm(d);try{sessionStorage.removeItem("fhc")}catch(_){}location.href="/thank-you"}
+ try{const tok=store.get().token||"";
+  const [nf,hp]=await Promise.all([postForm(d).then(()=>true,()=>false),hubspot("step2",{...d,token:tok})]);
+  // Netlify Forms keeps a full backup copy; succeed if either destination accepted it.
+  if(!nf&&!hp.ok)throw new Error("failed");
+  try{sessionStorage.removeItem("fhc")}catch(_){}location.href="/thank-you"}
  catch(err){$("e-form").textContent="Sorry, something went wrong submitting. Please try again.";b.disabled=false;b.textContent="Submit assessment"}});
