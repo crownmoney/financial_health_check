@@ -16,3 +16,7 @@ Netlify Function `netlify/functions/hubspot.mjs` (needs env var `HUBSPOT_ACCESS_
 - Mappings live in `netlify/lib/hubspot.mjs` (`QUESTIONS`, `INCOME`, `EXPENSES`). Only fields the client filled in are written. "Annually" → HubSpot "Yearly". Food/fuel have no frequency property, so they're stored as weekly amounts.
 - Notes use inline-styled HTML only: HubSpot strips `<style>` and `<script>` from notes.
 - Netlify Forms still receives a full copy of every step-2 submission as a backup.
+
+## Google Chat notifications
+Env var `GOOGLE_CHAT_WEBHOOK_URL` (Netlify, scope: Functions/Runtime) = incoming-webhook URL of the Chat space "$ Payments & Health Checks".
+After page 1 and page 2 the function posts a card (name + email, or just the email if no name; the answers; HubSpot sync status; "Open deal" button). A Chat failure never affects the user or the HubSpot sync; if the var is unset, posting is skipped.
