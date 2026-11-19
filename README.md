@@ -18,5 +18,5 @@ Netlify Function `netlify/functions/hubspot.mjs` (needs env var `HUBSPOT_ACCESS_
 - Netlify Forms still receives a full copy of every step-2 submission as a backup.
 
 ## Google Chat notifications
-Env var `GOOGLE_CHAT_WEBHOOK_URL` (Netlify, scope: Functions/Runtime) = incoming-webhook URL of the Chat space "$ Payments & Health Checks".
+Env var `GOOGLE_CHAT_WEBHOOK_URL` (Netlify, secret, production context, scopes: Functions + Runtime; already configured) = incoming-webhook URL of the Chat space "$ Payments & Health Checks".
 After page 1 and page 2 the function posts a plain-text message in the same layout as the old Zapier post (name + email, or just the email if no name; the answers; HubSpot deal link / sync status). A Chat failure never affects the user or the HubSpot sync; if the var is unset, posting is skipped.
