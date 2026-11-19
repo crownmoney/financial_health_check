@@ -146,7 +146,7 @@ export const dealUrl = id => `https://app.hubspot.com/contacts/${HS_PORTAL}/reco
 const t = v => String(v ?? "").replace(/[<>]/g, "").trim();
 const who = (name, email) => (t(name) ? `${t(name)} (${t(email)})` : t(email));
 const status = ctx => ctx.hubspotOk === false ? "⚠️ HubSpot update failed – check Netlify function logs."
-  : !ctx.matched ? "⚠️ No HubSpot contact found for this email – nothing was saved to HubSpot."
+  : !ctx.matched ? "" // not in HubSpot: just the email + answers, no extra line
   : ctx.dealId ? `✅ Saved to HubSpot deal: ${dealUrl(ctx.dealId)}` : "ℹ️ Contact found but has no deal – note added to the contact.";
 const cap = s => s.slice(0, 4000); // Chat text messages max out around 4096 chars
 
@@ -158,7 +158,7 @@ export function chatStep1(d, name, ctx) {
     "=== GOAL (not currently on track for) ===", t(d.goal) || "—", "",
     "=== WHAT'S MOST MISSING ===", t(d.missing) || "—", "",
     status(ctx),
-  ].join("\n")) };
+  ].join("\n").trim()) };
 }
 export function chatStep2(d, name, ctx) {
   const tot = totals(d);
@@ -180,5 +180,5 @@ export function chatStep2(d, name, ctx) {
     "", "=== TOTALS (per month) ===",
     `• Income: ${money(tot.inc)}`, `• Expenses (excl. mortgage): ${money(tot.exp)}`, `• Surplus: ${tot.surplus < 0 ? "-" : ""}${money(Math.abs(tot.surplus))}`, "",
     status(ctx),
-  ].join("\n")) };
+  ].join("\n").trim()) };
 }
