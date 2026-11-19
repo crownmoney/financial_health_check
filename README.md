@@ -19,4 +19,4 @@ Netlify Function `netlify/functions/hubspot.mjs` (needs env var `HUBSPOT_ACCESS_
 
 ## Google Chat notifications
 Env var `GOOGLE_CHAT_WEBHOOK_URL` (Netlify, scope: Functions/Runtime) = incoming-webhook URL of the Chat space "$ Payments & Health Checks".
-After page 1 and page 2 the function posts a card (name + email, or just the email if no name; the answers; HubSpot sync status; "Open deal" button). A Chat failure never affects the user or the HubSpot sync; if the var is unset, posting is skipped.
+After page 1 and page 2 the function posts a plain-text message in the same layout as the old Zapier post (name + email, or just the email if no name; the answers; HubSpot deal link / sync status). A Chat failure never affects the user or the HubSpot sync; if the var is unset, posting is skipped.

@@ -139,42 +139,46 @@ export function step2Props(d, today) {
   return p;
 }
 
-// ---- Google Chat (incoming webhook, cardsV2) ----
+// ---- Google Chat (incoming webhook, plain text – mirrors the layout of the existing Zapier post) ----
 const HS_PORTAL = "5290127";
 export const dealUrl = id => `https://app.hubspot.com/contacts/${HS_PORTAL}/record/0-3/${id}`;
-const who = (name, email) => (name ? `${name} (${email})` : email);
-const card = (id, title, subtitle, sections, dealId) => ({
-  text: `${subtitle} – ${title}`, // plain-text fallback used in notifications
-  cardsV2: [{ cardId: id, card: {
-    header: { title, subtitle },
-    sections: [...sections, ...(dealId ? [{ widgets: [{ buttonList: { buttons: [{ text: "Open deal in HubSpot", onClick: { openLink: { url: dealUrl(dealId) } } }] } }] }] : [])],
-  } }],
-});
-const para = html => ({ textParagraph: { text: html } });
+// Chat text treats <users/all> etc. as mentions, so strip angle brackets from anything user-typed.
+const t = v => String(v ?? "").replace(/[<>]/g, "").trim();
+const who = (name, email) => (t(name) ? `${t(name)} (${t(email)})` : t(email));
 const status = ctx => ctx.hubspotOk === false ? "⚠️ HubSpot update failed – check Netlify function logs."
   : !ctx.matched ? "⚠️ No HubSpot contact found for this email – nothing was saved to HubSpot."
-  : ctx.dealId ? "✅ Note + properties saved to the HubSpot deal." : "ℹ️ Contact found but has no deal – note added to the contact.";
+  : ctx.dealId ? `✅ Saved to HubSpot deal: ${dealUrl(ctx.dealId)}` : "ℹ️ Contact found but has no deal – note added to the contact.";
+const cap = s => s.slice(0, 4000); // Chat text messages max out around 4096 chars
 
 export function chatStep1(d, name, ctx) {
-  const ans = QUESTIONS.map(([k, q], i) => `${d.answers[k] === "Yes" ? "✅" : "❌"} <b>${i + 1}.</b> ${esc(q)}`).join("<br>");
-  return card("fhc-step1", "Financial Health Check – Page 1 completed", who(esc(name), esc(d.email)), [
-    { header: "Answers", widgets: [para(ans)] },
-    { header: "Goal they aren't on track for", widgets: [para(esc(d.goal).replace(/\n/g, "<br>") || "—")] },
-    { header: "What's most missing", widgets: [para(esc(d.missing) || "—")] },
-    { widgets: [para(status(ctx))] },
-  ], ctx.dealId);
+  const ans = QUESTIONS.map(([k, q], i) => `• ${i + 1}. ${q.replace(/\.$/, "")}: ${d.answers[k] || "—"}`).join("\n");
+  return { text: cap([
+    `${who(name, d.email)} completed page 1 of the financial health check form.`, "",
+    "=== ANSWERS ===", ans, "",
+    "=== GOAL (not currently on track for) ===", t(d.goal) || "—", "",
+    "=== WHAT'S MOST MISSING ===", t(d.missing) || "—", "",
+    status(ctx),
+  ].join("\n")) };
 }
 export function chatStep2(d, name, ctx) {
-  const t = totals(d);
-  const line = (l, v) => `${esc(l)}: <b>${money(v.amount)}</b> ${esc(v.freq.toLowerCase())} (${money(monthly(v.amount, v.freq))}/mo)`;
-  const inc = INCOME.filter(([k]) => d.income[k]).map(([k, l]) => line(l, d.income[k])).join("<br>") || "—";
-  const exp = EXPENSES.filter(([k]) => d.expenses[k]).map(([k, l]) => line(l, d.expenses[k]))
-    .concat(d.custom.map(c => line(c.name + " (custom)", c))).join("<br>") || "—";
-  const people = [d.person1, d.person2].filter(Boolean).map(esc).join(" & ") || esc(name);
-  return card("fhc-step2", "Financial Health Check – Page 2 completed", who(people, esc(d.email)), [
-    { header: "Net income", widgets: [para(inc)] },
-    { header: "Expenses", widgets: [para(exp)] },
-    { header: "Totals (per month)", widgets: [para(`Income: <b>${money(t.inc)}</b><br>Expenses (excl. mortgage): <b>${money(t.exp)}</b><br>Surplus: <b>${t.surplus < 0 ? "-" : ""}${money(Math.abs(t.surplus))}</b>`)] },
-    { widgets: [para(status(ctx))] },
-  ], ctx.dealId);
+  const tot = totals(d);
+  const names = [d.person1, d.person2].filter(Boolean).map(t).join(" & ") || t(name);
+  const L = (label, v) => `• ${label}: ${money(v.amount)} (${v.freq === "Yearly" ? "Annually" : v.freq})`;
+  const pick = keys => EXPENSES.filter(([k]) => keys.includes(k) && d.expenses[k]).map(([k, l]) => L(l, d.expenses[k]));
+  const FFF = ["food", "fuel"], all = EXPENSES.map(e => e[0]);
+  const income = INCOME.filter(([k]) => d.income[k]).map(([k, l]) => L(l, d.income[k]));
+  const hard = pick(all.filter(k => !FFF.includes(k)));
+  const extra = d.custom.map(c => L(t(c.name), c));
+  const sec = (title, lines) => lines.length ? [title, ...lines] : [];
+  return { text: cap([
+    `${who(names, d.email)} completed page 2 of the financial health check form (income & expenses).`, "",
+    "=== INCOME ===", ...(income.length ? income : ["—"]), "",
+    "=== EXPENSES ===",
+    ...sec("Food & Fuel (FFF):", pick(FFF)),
+    ...sec("Hard Expenses:", hard),
+    ...sec("Additional (custom) expenses:", extra),
+    "", "=== TOTALS (per month) ===",
+    `• Income: ${money(tot.inc)}`, `• Expenses (excl. mortgage): ${money(tot.exp)}`, `• Surplus: ${tot.surplus < 0 ? "-" : ""}${money(Math.abs(tot.surplus))}`, "",
+    status(ctx),
+  ].join("\n")) };
 }
