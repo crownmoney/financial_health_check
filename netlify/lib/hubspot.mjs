@@ -73,7 +73,7 @@ export function verifyToken(token, secret, now = Date.now()) {
 
 // ---- branded note HTML (inline styles only: HubSpot strips <style> blocks and scripts from notes) ----
 const C = { dark: "#250B40", light: "#E6DEEE", white: "#ffffff" };
-const LOGO = "https://crown-financial-health-check.netlify.app/assets/brand/logo-light.png";
+const LOGO = "https://financial.crownmoney.com.au/assets/brand/logo-light.png";
 const wrap = (title, subtitle, inner) => `<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;border:1px solid ${C.light};border-radius:8px;overflow:hidden;color:${C.dark};">
 <div style="background:${C.dark};padding:16px 20px;"><img src="${LOGO}" alt="Crown Money" height="34" style="display:block;margin-bottom:10px;height:34px;"><div style="color:${C.white};font-size:17px;font-weight:bold;">${esc(title)}</div><div style="color:${C.light};font-size:12px;margin-top:2px;">${esc(subtitle)}</div></div>
 <div style="padding:16px 20px;background:${C.white};">${inner}</div></div>`;
