@@ -53,7 +53,6 @@ textarea{min-height:90px;resize:vertical}
 .total{display:flex;justify-content:space-between;background:var(--bg);border-radius:8px;padding:12px 14px;font-weight:800;font-size:13px;margin-top:12px}
 .done{background:#e6f9f1;border:1px solid #b6ecd6;border-radius:10px;padding:14px;font-size:12px;margin-bottom:14px}
 .logos{text-align:center;color:#9a93ad;padding:34px 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
-.logos p{font-family:Georgia,serif;font-size:19px;letter-spacing:0;text-transform:none;margin:10px 0 0;color:#8b84a0}
 .faq{max-width:760px;margin:0 auto;padding:30px 16px 56px}
 .faq h2{text-align:center;text-transform:uppercase;font-weight:800}
 details{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px}
@@ -63,3 +62,5 @@ footer{background:var(--purple);color:#bfb1d9;padding:40px 5vw;font-size:12px}
 footer .logo{color:#fff;font-size:20px;margin-bottom:10px}
 footer .disc{margin-top:28px;border:1px solid #ffffff22;border-radius:10px;padding:14px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}
 @media(max-width:640px){.cols{grid-template-columns:1fr}.row{grid-template-columns:1fr 90px 105px}.q{flex-wrap:wrap}.q .t{flex-basis:calc(100% - 40px)}.yn{margin-left:32px}}
+.press{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:22px 34px;max-width:900px;margin:22px auto 0}.press img{height:30px;width:auto;max-width:150px;object-fit:contain;filter:grayscale(1);opacity:.6;transition:.2s}.press img:hover{filter:none;opacity:1}@media(max-width:640px){.press{gap:18px 22px}.press img{height:24px;max-width:110px}}
+.press img[src*="7-today"],.press img[src*="money-management"]{height:44px}.press img[src*="the-west"]{height:38px}
