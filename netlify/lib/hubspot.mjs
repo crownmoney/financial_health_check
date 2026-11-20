@@ -17,7 +17,7 @@ export const QUESTIONS = [
   ["expert_review", "I review my strategy with an expert as life changes.", "i_ve_reviewed_my_financials_with_a_pro_in_the_last_1yr"], // "10. I've reviewed my financials with a pro..."
 ];
 
-// [formKey, label, amountProp, freqProp|null]  (null freq => stored as weekly amount, matching how the existing deal data is used)
+// [formKey, label, amountProp|null, freqProp|null]  (null amountProp => note/Chat only)
 export const INCOME = [
   ["p1_income", "Person 1 – net income", "net_income__1", "net_income_1_frequency"],
   ["p1_other", "Person 1 – other net income / bonus", "net_income_1_other", "net_income_1_other_frequency"],
@@ -25,7 +25,7 @@ export const INCOME = [
   ["p2_other", "Person 2 – other net income / bonus", "net_income_2_other", "net_income_2_other_frequency"],
 ];
 export const EXPENSES = [
-  ["food", "Food", "food", null], ["fuel", "Fuel", "fuel", null],
+  ["food", "Food", "food", "food_frequency"], ["fuel", "Fuel", "fuel", "fuel_frequency"],
   ["rates", "Rates", "rates", "rates_frequency"], ["gas", "Gas", "gas", "gas_frequency"],
   ["electricity", "Elec", "electricity", "electricity_frequency"], ["water", "Water", "water", "water_frequency"],
   ["car_insurance", "Car Ins", "car_insurance", "car_insurance_frequency"],
@@ -130,9 +130,8 @@ export function step2Props(d, today) {
   const p = { financial_health_check_date: today, financial_health_check_page_2_number: "1" };
   for (const [k, , a, f] of INCOME) if (d.income[k]) { p[a] = String(d.income[k].amount); p[f] = d.income[k].freq; }
   for (const [k, , a, f] of EXPENSES) {
-    const l = d.expenses[k]; if (!l || !a) continue;
-    if (f) { p[a] = String(l.amount); p[f] = l.freq; }
-    else p[a] = String(Math.round((monthly(l.amount, l.freq) * 12 / 52) * 100) / 100); // food & fuel: HubSpot has no frequency field -> weekly amount
+    const l = d.expenses[k]; if (!l || !a || !f) continue;
+    p[a] = String(l.amount); p[f] = l.freq;
   }
   d.custom.slice(0, 3).forEach((c, i) => { p[`additional_expense${i + 1}`] = String(c.amount); p[`additional_expense${i + 1}_frequency`] = c.freq; });
   if (d.custom.length) p.other_expenses_text = d.custom.map(c => c.name).join("; ");
