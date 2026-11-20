@@ -6,13 +6,13 @@ export const hsFreq = f => (f === "Annually" ? "Yearly" : f);
 
 export const QUESTIONS = [
   ["plan_written", "I have a written plan with my exact debt-free date.", "i_have_a_clear_written_plan"],
-  ["know_interest", "I know exactly how much interest I'll hand the bank over my loan."],
-  ["debt_free_retire", "I'll be debt-free comfortably before I retire."],
+  ["know_interest", "I know exactly how much interest I'll hand the bank over my loan.", "fhc_know_interest_paid_to_bank"],
+  ["debt_free_retire", "I'll be debt-free comfortably before I retire.", "fhc_debt_free_before_retirement"],
   ["buffer_3m", "I have 3+ months of expenses saved as a buffer.", "i_know_how_my_mortgage_works"], // HubSpot label: "8. I have 3 month financial buffer"
-  ["loan_structure", "My loan is structured to pay down faster than a standard bank loan."],
-  ["rates_2pct", "If rates rose 2%, I know the cost and my plan still holds."],
-  ["tracking", "I track my money with real live data feeds and compare my bills every year."],
-  ["partner_aligned", "My partner and I share one plan and the same debt-free goal."],
+  ["loan_structure", "My loan is structured to pay down faster than a standard bank loan.", "fhc_loan_structured_to_pay_faster"],
+  ["rates_2pct", "If rates rose 2%, I know the cost and my plan still holds.", "fhc_rates_rise_2pct_plan_holds"],
+  ["tracking", "I track my money with real live data feeds and compare my bills every year.", "fhc_track_money_live_data_feeds"],
+  ["partner_aligned", "My partner and I share one plan and the same debt-free goal.", "fhc_partner_same_plan_and_goal"],
   ["coaching", "I've had coaching built around my situation, not generic tips.", "i_have_a_plan_that_shows_me_how_i_ll_grow_my_money_for_retirement"], // "2. I've received financial Coaching and Education"
   ["expert_review", "I review my strategy with an expert as life changes.", "i_ve_reviewed_my_financials_with_a_pro_in_the_last_1yr"], // "10. I've reviewed my financials with a pro..."
 ];
@@ -33,7 +33,7 @@ export const EXPENSES = [
   ["health_insurance", "Health Insurance", "health_insurance", "health_insurance_frequency"],
   ["medical", "Medical", "medical", "medical_cost_frequency"],
   ["life_insurance", "Life Insurance", "life_insurance", "life_insurance_frequency"],
-  ["pet_insurance", "Pet Insurance", null, null], // HubSpot's pet_insurance_frequency is a number field -> note only
+  ["pet_insurance", "Pet Insurance", "pet_insurance", "pet_insurance_frequency_dropdown"], // HubSpot's own pet_insurance_frequency is a NUMBER field, so a new dropdown is needed
   ["income_protection", "Income Protection", "income_protection", "income_protection_frequency"],
   ["phone", "Phone", "phone", "phone_frequency"], ["internet", "Internet", "internet", "internet_frequency"],
   ["car_rego", "Car Rego", "car_rego", "car_rego_frequency"],
@@ -49,6 +49,14 @@ export const EXPENSES = [
   ["rent", "Rent", "rent", "rent_frequency"], ["debt_repay", "Debt Repay", "debt_repay", "debt_repay_frequency"],
 ];
 
+// Properties that must be created in HubSpot (deal, internal names below). Until one exists the writer skips it
+// silently, so nothing fails and no half-data is written; it starts working as soon as the property is created.
+export const PENDING_PROPS = [
+  "fhc_know_interest_paid_to_bank", "fhc_debt_free_before_retirement", "fhc_loan_structured_to_pay_faster",
+  "fhc_rates_rise_2pct_plan_holds", "fhc_track_money_live_data_feeds", "fhc_partner_same_plan_and_goal",
+  "fhc_goal_not_on_track", "fhc_most_missing", "pet_insurance_frequency_dropdown",
+];
+export const DEPENDS_ON = { pet_insurance_frequency_dropdown: ["pet_insurance"] }; // amount is meaningless without its frequency
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const clip = (s, n) => String(s ?? "").trim().slice(0, n);
 export const num = v => { const n = parseFloat(v); return Number.isFinite(n) && n >= 0 && n < 1e9 ? n : null; };
@@ -97,6 +105,8 @@ ${h("What's most missing from the current approach?")}<div style="border:1px sol
 }
 export function step1Props(d, today) {
   const p = { financial_health_check_page_1: today, financial_health_check__number_: "1" };
+  if (d.goal) p.fhc_goal_not_on_track = d.goal;
+  if (d.missing) p.fhc_most_missing = d.missing;
   for (const [k, , prop] of QUESTIONS) if (prop && d.answers[k]) p[prop] = d.answers[k] === "Yes" ? "true" : "false";
   return p;
 }

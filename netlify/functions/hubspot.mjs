@@ -1,4 +1,4 @@
-import { cleanStep1, cleanStep2, step1Note, step1Props, step2Note, step2Props, signToken, verifyToken, todayAU, chatStep1, chatStep2 } from "../lib/hubspot.mjs";
+import { PENDING_PROPS, DEPENDS_ON, cleanStep1, cleanStep2, step1Note, step1Props, step2Note, step2Props, signToken, verifyToken, todayAU, chatStep1, chatStep2 } from "../lib/hubspot.mjs";
 
 const HS = "https://api.hubapi.com";
 const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -34,8 +34,27 @@ async function addNote(token, { dealId, contactId }, html) {
   });
 }
 
+// Drop properties that are still waiting to be created in HubSpot (cached 5 min). Only a definite 404 counts as "missing";
+// any other error (e.g. missing schema scope) keeps the property so the per-property fallback in patchDeal can try it.
+const exists = new Map();
+async function propertyExists(token, name) {
+  const hit = exists.get(name); if (hit && Date.now() - hit.at < 300000) return hit.ok;
+  let ok = true;
+  try { await hs(token, "GET", `/crm/v3/properties/deals/${encodeURIComponent(name)}`); } catch (e) { if (e.status === 404) ok = false; else console.warn("property check", name, e.message); }
+  exists.set(name, { ok, at: Date.now() }); return ok;
+}
+async function withoutPending(token, props) {
+  const out = { ...props };
+  for (const name of PENDING_PROPS) {
+    if (!(name in out)) continue;
+    if (!(await propertyExists(token, name))) { delete out[name]; for (const dep of DEPENDS_ON[name] || []) delete out[dep]; console.warn("skipping not-yet-created property:", name); }
+  }
+  return out;
+}
+
 // One bad property (type mismatch) must not lose the rest: retry individually if the bulk PATCH fails.
 async function patchDeal(token, dealId, props) {
+  props = await withoutPending(token, props);
   const clean = Object.fromEntries(Object.entries(props).filter(([, v]) => v !== undefined && v !== ""));
   try { await hs(token, "PATCH", `/crm/v3/objects/deals/${dealId}`, { properties: clean }); return []; }
   catch (e) {
