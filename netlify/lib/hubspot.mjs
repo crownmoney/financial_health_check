@@ -5,16 +5,16 @@ export const FREQ_PER_YEAR = { Weekly: 52, Fortnightly: 26, Monthly: 12, Quarter
 export const hsFreq = f => (f === "Annually" ? "Yearly" : f);
 
 export const QUESTIONS = [
-  ["plan_written", "I have a written plan with my exact debt-free date.", "i_have_a_clear_written_plan"],
+  ["plan_written", "I have a written plan with my exact debt-free date.", "fhc_written_plan_with_debt_free_date"],
   ["know_interest", "I know exactly how much interest I'll hand the bank over my loan.", "fhc_know_interest_paid_to_bank"],
   ["debt_free_retire", "I'll be debt-free comfortably before I retire.", "fhc_debt_free_before_retirement"],
-  ["buffer_3m", "I have 3+ months of expenses saved as a buffer.", "i_know_how_my_mortgage_works"], // HubSpot label: "8. I have 3 month financial buffer"
+  ["buffer_3m", "I have 3+ months of expenses saved as a buffer.", "fhc_three_months_buffer"],
   ["loan_structure", "My loan is structured to pay down faster than a standard bank loan.", "fhc_loan_structured_to_pay_faster"],
   ["rates_2pct", "If rates rose 2%, I know the cost and my plan still holds.", "fhc_rates_rise_2pct_plan_holds"],
   ["tracking", "I track my money with real live data feeds and compare my bills every year.", "fhc_track_money_live_data_feeds"],
   ["partner_aligned", "My partner and I share one plan and the same debt-free goal.", "fhc_partner_same_plan_and_goal"],
-  ["coaching", "I've had coaching built around my situation, not generic tips.", "i_have_a_plan_that_shows_me_how_i_ll_grow_my_money_for_retirement"], // "2. I've received financial Coaching and Education"
-  ["expert_review", "I review my strategy with an expert as life changes.", "i_ve_reviewed_my_financials_with_a_pro_in_the_last_1yr"], // "10. I've reviewed my financials with a pro..."
+  ["coaching", "I've had coaching built around my situation, not generic tips.", "fhc_coaching_built_around_me"],
+  ["expert_review", "I review my strategy with an expert as life changes.", "fhc_expert_review_as_life_changes"],
 ];
 
 // [formKey, label, amountProp|null, freqProp|null]  (null amountProp => note/Chat only)
@@ -52,6 +52,7 @@ export const EXPENSES = [
 // Properties that must be created in HubSpot (deal, internal names below). Until one exists the writer skips it
 // silently, so nothing fails and no half-data is written; it starts working as soon as the property is created.
 export const PENDING_PROPS = [
+  "fhc_written_plan_with_debt_free_date", "fhc_three_months_buffer", "fhc_coaching_built_around_me", "fhc_expert_review_as_life_changes",
   "fhc_know_interest_paid_to_bank", "fhc_debt_free_before_retirement", "fhc_loan_structured_to_pay_faster",
   "fhc_rates_rise_2pct_plan_holds", "fhc_track_money_live_data_feeds", "fhc_partner_same_plan_and_goal",
   "fhc_goal_not_on_track", "fhc_most_missing", "pet_insurance_frequency_dropdown",

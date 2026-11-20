@@ -23,14 +23,25 @@ After page 1 and page 2 the function posts a plain-text message in the same layo
 
 ### HubSpot properties still to be created (deal object)
 The code already maps these; each is skipped (with a log line) until it exists, then written automatically.
+NB: the legacy yes/no properties ("1. I have a Strategy & Plan" etc.) are **calculated** properties in HubSpot, so the API cannot write them – new writable ones are needed.
+
+Yes/No questions – dropdown, options: `true` = Yes, `false` = No, `Not Sure` (same as the existing yes/no properties):
+| Internal name | Question |
+|---|---|
+| `fhc_written_plan_with_debt_free_date` | 1. I have a written plan with my exact debt-free date |
+| `fhc_know_interest_paid_to_bank` | 2. I know exactly how much interest I'll hand the bank |
+| `fhc_debt_free_before_retirement` | 3. I'll be debt-free comfortably before I retire |
+| `fhc_three_months_buffer` | 4. I have 3+ months of expenses saved as a buffer |
+| `fhc_loan_structured_to_pay_faster` | 5. My loan is structured to pay down faster than a standard bank loan |
+| `fhc_rates_rise_2pct_plan_holds` | 6. If rates rose 2%, I know the cost and my plan still holds |
+| `fhc_track_money_live_data_feeds` | 7. I track my money with live data feeds and compare bills yearly |
+| `fhc_partner_same_plan_and_goal` | 8. My partner and I share one plan and the same debt-free goal |
+| `fhc_coaching_built_around_me` | 9. I've had coaching built around my situation |
+| `fhc_expert_review_as_life_changes` | 10. I review my strategy with an expert as life changes |
+
+Other:
 | Internal name | Label | Type |
 |---|---|---|
-| `fhc_know_interest_paid_to_bank` | FHC: I know how much interest I'll hand the bank | Dropdown: `true`=Yes, `false`=No, `Not Sure` |
-| `fhc_debt_free_before_retirement` | FHC: I'll be debt-free comfortably before I retire | same |
-| `fhc_loan_structured_to_pay_faster` | FHC: My loan is structured to pay down faster | same |
-| `fhc_rates_rise_2pct_plan_holds` | FHC: If rates rose 2% my plan still holds | same |
-| `fhc_track_money_live_data_feeds` | FHC: I track my money with live data feeds | same |
-| `fhc_partner_same_plan_and_goal` | FHC: Partner and I share one plan and goal | same |
 | `fhc_goal_not_on_track` | FHC: Goal they aren't on track for | Multi-line text |
 | `fhc_most_missing` | FHC: What's most missing | Single-line text |
 | `pet_insurance_frequency_dropdown` | Pet Insurance Frequency (dropdown) | Dropdown: Weekly, Fortnightly, Monthly, Quarterly, Yearly |
