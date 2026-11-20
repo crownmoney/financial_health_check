@@ -145,7 +145,7 @@ export function step2Props(d, today) {
     p[a] = String(l.amount); p[f] = l.freq;
   }
   d.custom.slice(0, 3).forEach((c, i) => { p[`additional_expense${i + 1}`] = String(c.amount); p[`additional_expense${i + 1}_frequency`] = c.freq; });
-  if (d.custom.length) p.other_expenses_text = d.custom.map(c => c.name).join("; ");
+  if (d.custom.length) { p.other_expenses = "Yes"; p.other_expenses_text = d.custom.map(c => c.name).join("; "); }
   return p;
 }
 

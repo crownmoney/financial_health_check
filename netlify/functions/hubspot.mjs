@@ -45,10 +45,9 @@ async function propertyExists(token, name) {
 }
 async function withoutPending(token, props) {
   const out = { ...props };
-  for (const name of PENDING_PROPS) {
-    if (!(name in out)) continue;
-    if (!(await propertyExists(token, name))) { delete out[name]; for (const dep of DEPENDS_ON[name] || []) delete out[dep]; console.warn("skipping not-yet-created property:", name); }
-  }
+  const names = PENDING_PROPS.filter(n => n in out);
+  const found = await Promise.all(names.map(n => propertyExists(token, n))); // in parallel: keeps page 1 fast
+  names.forEach((name, i) => { if (!found[i]) { delete out[name]; for (const dep of DEPENDS_ON[name] || []) delete out[dep]; console.warn("skipping not-yet-created property:", name); } });
   return out;
 }
 
@@ -76,7 +75,10 @@ async function notifyChat(message) {
   } catch (e) { console.error("Chat webhook failed:", e.message); }
 }
 
-export default async (req) => {
+// Run the Chat post after the response is sent (Netlify context.waitUntil); fall back to fire-and-forget.
+const later = (context, promise) => { try { context?.waitUntil ? context.waitUntil(promise) : promise.catch(() => {}); } catch { promise.catch(() => {}); } };
+
+export default async (req, context) => {
   if (req.method !== "POST") return json({ ok: false }, 405);
   const step = new URL(req.url).pathname.endsWith("step2") ? 2 : 1;
   const secret = process.env.HUBSPOT_ACCESS_TOKEN;
@@ -93,11 +95,11 @@ export default async (req) => {
     try {
       t = await findTarget(secret, d.email);
       if (t.dealId || t.contactId) {
-        await addNote(secret, t, step1Note(d, when));
-        if (t.dealId) { const failed = await patchDeal(secret, t.dealId, step1Props(d, today)); if (failed.length) console.error("step1 props failed:", failed.join(",")); }
+        const [, failed] = await Promise.all([addNote(secret, t, step1Note(d, when)), t.dealId ? patchDeal(secret, t.dealId, step1Props(d, today)) : []]);
+        if (failed.length) console.error("step1 props failed:", failed.join(","));
       } else console.warn("step1: no HubSpot contact for submitted email");
     } catch (e) { console.error(e.message); hubspotOk = false; }
-    await notifyChat(chatStep1(d, t.name, { matched: !!(t.contactId || t.dealId), dealId: t.dealId, hubspotOk }));
+    later(context, notifyChat(chatStep1(d, t.name, { matched: !!(t.contactId || t.dealId), dealId: t.dealId, hubspotOk })));
     // Same response whether or not a contact matched (don't reveal who is in the CRM).
     // Token also carries the email so step 2 can retry the lookup if HubSpot hiccuped here.
     return json({ ok: true, token: signToken({ d: t.dealId, c: t.contactId, n: t.name, e: d.email }, secret) });
@@ -110,11 +112,11 @@ export default async (req) => {
   try {
     if (!tgt.dealId && !tgt.contactId && tok.e) tgt = await findTarget(secret, tok.e); // retry (step 1 may have failed or found nothing)
     if (tgt.dealId || tgt.contactId) {
-      await addNote(secret, tgt, step2Note(d, when));
-      if (tgt.dealId) { const failed = await patchDeal(secret, tgt.dealId, step2Props(d, today)); if (failed.length) console.error("step2 props failed:", failed.join(",")); }
+      const [, failed] = await Promise.all([addNote(secret, tgt, step2Note(d, when)), tgt.dealId ? patchDeal(secret, tgt.dealId, step2Props(d, today)) : []]);
+      if (failed.length) console.error("step2 props failed:", failed.join(","));
     } else console.warn("step2: no HubSpot target for this email");
   } catch (e) { console.error(e.message); hubspotOk = false; }
-  await notifyChat(chatStep2(d, tgt.name, { matched: !!(tgt.dealId || tgt.contactId), dealId: tgt.dealId, hubspotOk }));
+  later(context, notifyChat(chatStep2(d, tgt.name, { matched: !!(tgt.dealId || tgt.contactId), dealId: tgt.dealId, hubspotOk })));
   return hubspotOk ? json({ ok: true }) : json({ ok: false }, 502);
 };
 export const config = { path: ["/api/hubspot/step1", "/api/hubspot/step2"] };
